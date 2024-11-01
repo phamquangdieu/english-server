@@ -2,8 +2,10 @@ var connectDB = require('./db/connect');
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
+const cors = require('cors');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+
 require('dotenv').config({ path: path.resolve(__dirname, './.env') });
 
 var indexRouter = require('./routes/index');
@@ -11,6 +13,9 @@ var usersRouter = require('./routes/users');
 var wordsRouter = require('./routes/word');
 
 var app = express();
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://english-client-fl2v.vercel.app/']  // Replace with your client’s domain
+}));
 
 const start = async () => {
   try {
