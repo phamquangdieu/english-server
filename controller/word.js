@@ -23,7 +23,7 @@ const createQuiz = async function(req, res, next) {
             ? randomArray(filter(means, i => i !== item.mean), 3)
             : randomArray(filter(words, i => i !== item.word), 3);
         let {  answers, correctSelect} = mapSelection(tmpSelections, correctAnswer);
-        answersQuiz.push({ key, correctSelect })
+        answersQuiz.push({ key, correctSelect, correctAnswer })
         return ({
             key,
             type,
@@ -38,15 +38,22 @@ const createQuiz = async function(req, res, next) {
     });
 }
 
-const getResultQuiz = async function(req, res, next) {
-    const { id } = req.query;
+const checkResultQuiz = async function(req, res, next) {
+    const { id, answers } = req.body;
     const tmp = await Quiz.findById(id);
     const result = JSON.parse(tmp.content);
-    res.status(200).json(result);
+    let count = 0;
+    map(result, item => {
+        if (answers[item.key.toString()] === item.correctSelect) count++;
+    })
+    res.status(200).json({
+        correct: count,
+        result
+    });
 }
 
 module.exports = {
     createWord,
     createQuiz,
-    getResultQuiz
+    checkResultQuiz
 }
