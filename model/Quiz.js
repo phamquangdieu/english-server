@@ -2,10 +2,13 @@ const mongoose = require('mongoose');
 
 const QuizSchema = new mongoose.Schema({
     content: {
-        type: String,
+        type: mongoose.Schema.Types.Mixed,
         required: true,
         trim: true,
     },
+    count: {
+        type: Number
+    }
     
 }, {collection: 'Quizs'})
 

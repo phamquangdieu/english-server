@@ -10,20 +10,26 @@ const createWord = async function(req, res, next) {
 
 const createQuiz = async function(req, res, next) {
     const wordList = await Word.aggregate([
-        { $sample: { size: 10 } }
+        { $sample: { size: 30 } }
       ])
     const words = map(wordList, 'word');
     const means = map(wordList, 'mean');
     const answersQuiz = []
-    const quiz = map(wordList, (item, key) => {
+    const quiz = map([...wordList].slice(0, 15), (item, key) => {
         let type = randomNumber(2) === 0 ? 'en' : 'vi';
         let word = type === 'en' ? item.word : item.mean;
         let correctAnswer = type === 'en' ? item.mean : item.word;
         let tmpSelections = type === 'en' 
             ? randomArray(filter(means, i => i !== item.mean), 3)
             : randomArray(filter(words, i => i !== item.word), 3);
-        let {  answers, correctSelect} = mapSelection(tmpSelections, correctAnswer);
-        answersQuiz.push({ key, correctSelect, correctAnswer })
+        let {  answers, correctSelect } = mapSelection(tmpSelections, correctAnswer);
+        answersQuiz.push({
+            key,
+            correctSelect, 
+            type,
+            word,
+            answers
+        })
         return ({
             key,
             type,
@@ -31,7 +37,7 @@ const createQuiz = async function(req, res, next) {
             answers
         })
     })
-    const createdQuiz = await Quiz.create({ content: JSON.stringify(answersQuiz) });
+    const createdQuiz = await Quiz.create({ content: answersQuiz });
     res.status(200).json({
         id: createdQuiz._id,
         content: quiz,
@@ -41,19 +47,33 @@ const createQuiz = async function(req, res, next) {
 const checkResultQuiz = async function(req, res, next) {
     const { id, answers } = req.body;
     const tmp = await Quiz.findById(id);
-    const result = JSON.parse(tmp.content);
+    const result = tmp.content;
     let count = 0;
-    map(result, item => {
+    const handleResult = map(result, item => {
         if (answers[item.key.toString()] === item.correctSelect) count++;
+        return {
+            ...item,
+            yourChoice: answers[item.key.toString()]
+        }
     })
+    await Quiz.findOneAndUpdate({ _id: id }, { count, content: handleResult });
     res.status(200).json({
+        id,
         correct: count,
-        result
+        result: handleResult,
     });
+}
+
+const getResult = async function(req, res, next) {
+    const { id } = req.query;
+    console.log(id);
+    const response = await Quiz.findById(id);
+    res.status(200).json({ result: response })
 }
 
 module.exports = {
     createWord,
     createQuiz,
-    checkResultQuiz
+    checkResultQuiz,
+    getResult,
 }

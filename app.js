@@ -14,7 +14,12 @@ var wordsRouter = require('./routes/word');
 
 var app = express();
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000', 'https://english-client-fl2v.vercel.app']  // Replace with your client’s domain
+  origin: [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://english-client-fl2v.vercel.app',
+    'http://localhost:3001',
+  ]  // Replace with your client’s domain
 }));
 
 const start = async () => {
