@@ -16,6 +16,6 @@ const WordSchema = new mongoose.Schema({
         trim: true,
     },
     
-}, {collection: 'Words'})
+}, {collection: 'Words'});
 
-module.exports = mongoose.model('Word', WordSchema)
+module.exports = mongoose.model('Word', WordSchema);

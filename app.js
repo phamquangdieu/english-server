@@ -11,6 +11,8 @@ require('dotenv').config({ path: path.resolve(__dirname, './.env') });
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var wordsRouter = require('./routes/word');
+var authRouter = require('./routes/auth');
+const { authenticateJWT } = require('./middleware/authMiddleware');
 
 var app = express();
 app.use(cors({
@@ -45,7 +47,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/api/v1/word', wordsRouter);
+app.use('/api/v1/word', authenticateJWT, wordsRouter);
+app.use('/api/v1/auth', authRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -54,6 +57,7 @@ app.use(function(req, res, next) {
 
 // error handler
 app.use(function(err, req, res, next) {
+  console.log(123, err);
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};

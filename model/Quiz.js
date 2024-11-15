@@ -10,6 +10,6 @@ const QuizSchema = new mongoose.Schema({
         type: Number
     }
     
-}, {collection: 'Quizs'})
+}, {collection: 'Quizs'});
 
-module.exports = mongoose.model('Quizs', QuizSchema)
+module.exports = mongoose.model('Quizs', QuizSchema);
