@@ -29,7 +29,7 @@ const handleUser = async (req, res, next) => {
         const jwtToken = jwt.sign(
             { id: user._id, email: user.email, name: user.name },
             'YOUR_JWT_SECRET',
-            { expiresIn: '1h' }
+            { expiresIn: '6h' }
         );
         res.status(200).json({
             message: 'success',
