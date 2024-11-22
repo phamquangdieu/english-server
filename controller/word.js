@@ -13,6 +13,37 @@ const correctAnswerArr = {
     'synonym': 'synonym'
 };
 
+const convertType = (type) => {
+    switch(type) {
+        case 'b2': 
+            return {
+                $match: {
+                    level: 'b2'
+                }
+            };
+        case 'phrasal_verb': 
+            return {
+                $match: {
+                    subCategory: 'phrasal verb'
+                }
+            };
+        case 'phrasal': 
+            return {
+                $match: {
+                    subCategory: 'phrasal'
+                }
+            };
+        case 'idioms': 
+            return {
+                $match: {
+                    subCategory: 'idioms'
+                }
+            };
+        default:
+            return null;
+    }
+};
+
 const createWord = async function(req, res, next) {
     const word = await Word.create(req.body);
     res.status(200).json(word);
@@ -20,13 +51,19 @@ const createWord = async function(req, res, next) {
 
 const createQuiz = async function(req, res, next) {
     try {
+        const { type } = req.query;
+        const query = convertType(type);
+        
         const wordList = await Word.aggregate([
-            { $sample: { size: 30 } }
+            query,
+            { $sample: { size: 30 } },
           ]);
         const words = map(wordList, 'word');
         const means = map(wordList, 'mean');
         const answersQuiz = [];
         const quiz = map([...wordList].slice(0, 15), (item, key) => {
+            console.log(item.subCategory);
+            
             let type = randomNumber(2) === 0 ? 'en' : 'vi';
             if (item.synonym) type = 'synonym';
             let word = type === 'en' || type === 'synonym' ? item.word : item.mean;
@@ -59,6 +96,28 @@ const createQuiz = async function(req, res, next) {
         });
     } catch (error) {
         console.log(error);
+    }
+};
+
+
+const createQuiz2 = async function(req, res, next) {
+    try {
+        const words = await Word.aggregate([
+            {
+              $match: {
+                $and: [
+                  { word: { $exists: true, $type: 'string' } }, // `word` tồn tại và là chuỗi
+                  { mean: { $exists: true, $type: 'string' } }, // `mean` tồn tại và là chuỗi
+                  { $expr: { $lt: [{ $strLenCP: '$word' }, 10] } }, // Độ dài `word` nhỏ hơn 10
+                  { $expr: { $lt: [{ $strLenCP: '$mean' }, 10] } }  // Độ dài `mean` nhỏ hơn 10
+                ]
+              }
+            },
+            { $sample: { size: 18 } },
+        ]);
+        res.status(200).json({ words});
+    } catch (error) {
+        res.status(500).json({ message: 'Có lỗi xảy ra!'});
     }
 };
 
@@ -159,4 +218,5 @@ module.exports = {
     getResult,
     importFile,
     exportFile,
+    createQuiz2
 };
